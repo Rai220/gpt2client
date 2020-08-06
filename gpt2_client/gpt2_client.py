@@ -197,12 +197,17 @@ class GPT2Client(object):
                             if return_text:
                                 return text_array
 
-    def prepare_sess(self, max_length=-1, temperature = 1):
+    def prepare_sess(self, max_length=-1, temperature = 1):        
         models_dir = models_dir = os.path.expanduser(os.path.expandvars(self.save_dir))
         enc = get_encoder(self.model_name, self.save_dir)
         hparams = default_hparams()
 
+        with open(os.path.join(self.save_dir, self.model_name, 'hparams.json')) as f:
+            data = json.load(f)
+            hparams.override_from_dict(data)
+
         length = hparams.n_ctx
+
         if max_length > 0:
             length = max_length
 
@@ -226,7 +231,6 @@ class GPT2Client(object):
             saver = tf.train.Saver()
             ckpt = tf.train.latest_checkpoint(os.path.join(self.save_dir, self.model_name))
             saver.restore(sess, ckpt)
-
             return sess
 
     def generate_batch_from_prompts(self, sess, batch):
