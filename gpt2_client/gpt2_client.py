@@ -197,14 +197,17 @@ class GPT2Client(object):
                             if return_text:
                                 return text_array
 
-    def prepare_sess(self, max_length=-1):
+    def prepare_sess(self, max_length=-1, temperature = 1):
         models_dir = models_dir = os.path.expanduser(os.path.expandvars(self.save_dir))
         enc = get_encoder(self.model_name, self.save_dir)
         hparams = default_hparams()
 
+        length = hparams.n_ctx
+        if max_length > 0:
+            length = max_length
+
         with tf.Session(graph=tf.Graph()) as sess:
             batch_size = 1
-            temperature = 1
             top_k = 40
 
             context = tf.placeholder(tf.int32, [batch_size, None])
@@ -213,7 +216,7 @@ class GPT2Client(object):
 
             output = sample_sequence(
                 hparams=hparams,
-                length=max_length,
+                length=length,
                 start_token=enc.encoder['<|endoftext|>'],
                 batch_size=batch_size,
                 temperature=temperature, 
