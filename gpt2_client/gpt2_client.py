@@ -197,7 +197,19 @@ class GPT2Client(object):
                             if return_text:
                                 return text_array
 
-    def prepare_sess(self, max_length=-1, temperature = 1):        
+    def generate_batch_from_prompts(self, batch, max_len=-1, temperature=1):
+        """ Returns an array of generated text
+        Parameters
+        ----------
+        arg: batch (list)
+            - desc: An array of prompts given to the GPT2Client instance.
+                    The contents of the array are fed to the instance one by one
+        Returns:
+            An array of generated text for each prompt given in `batch`
+        """                
+        
+        final_generated_text = []
+        
         models_dir = models_dir = os.path.expanduser(os.path.expandvars(self.save_dir))
         enc = get_encoder(self.model_name, self.save_dir)
         hparams = default_hparams()
@@ -207,63 +219,46 @@ class GPT2Client(object):
             hparams.override_from_dict(data)
 
         length = hparams.n_ctx
+        if max_length > 0:
+            length = max_length
 
-        sess = tf.Session(graph=tf.Graph())
-        batch_size = 1
-        temperature = 1
-        top_k = 40
+        with tf.Session(graph=tf.Graph()) as sess:
+            batch_size = 1
+            top_k = 40
 
-        context = tf.placeholder(tf.int32, [batch_size, None])
-        np.random.seed(None)
-        tf.set_random_seed(None)
+            context = tf.placeholder(tf.int32, [batch_size, None])
+            np.random.seed(None)
+            tf.set_random_seed(None)
 
-        output = sample_sequence(
-            hparams=hparams,
-            length=length,
-            start_token=enc.encoder['<|endoftext|>'],
-            batch_size=batch_size,
-            temperature=temperature, 
-            top_k=top_k
-        )
+            output = sample_sequence(
+                hparams=hparams,
+                length=length,
+                start_token=enc.encoder['<|endoftext|>'],
+                batch_size=batch_size,
+                temperature=temperature, 
+                top_k=top_k
+            )
 
-        saver = tf.train.Saver()
-        ckpt = tf.train.latest_checkpoint(os.path.join(self.save_dir, self.model_name))
-        saver.restore(sess, ckpt)
+            saver = tf.train.Saver()
+            ckpt = tf.train.latest_checkpoint(os.path.join(self.save_dir, self.model_name))
+            saver.restore(sess, ckpt)
         
-        return sess, enc, output, context
+            for i in batch:
+                print ('Prompt: {}'.format(colored(i, 'green')))
+                context_tokens = enc.encode(i)
+                text_array = []
+                text = ''
+                generated = 0
+                for _ in range(len(batch) // batch_size):
+                    out = sess.run(output, feed_dict={
+                        context: [context_tokens for _ in range(batch_size)]
+                    })[:, len(context_tokens):]
 
-    def generate_batch_from_prompts(self, sess, enc, output, context, batch):
-        """ Returns an array of generated text
-
-        Parameters
-        ----------
-        arg: batch (list)
-            - desc: An array of prompts given to the GPT2Client instance.
-                    The contents of the array are fed to the instance one by one
-
-        Returns:
-            An array of generated text for each prompt given in `batch`
-        """                
-        
-        final_generated_text = []
-        batch_size = 1
-        
-        for i in batch:
-            print ('Prompt: {}'.format(colored(i, 'green')))
-            context_tokens = enc.encode(i)
-            text_array = []
-            text = ''
-            generated = 0
-            for _ in range(len(batch) // batch_size):
-                out = sess.run(output, feed_dict={
-                    context: [context_tokens for _ in range(batch_size)]
-                })[:, len(context_tokens):]
-
-                for i in range(batch_size):
-                    generated += 1
-                    text += enc.decode(out[i])
-                    
-                    final_generated_text.append(enc.decode(out[i]))
+                    for i in range(batch_size):
+                        generated += 1
+                        text += enc.decode(out[i])
+                        
+                        final_generated_text.append(enc.decode(out[i]))
                 
         return final_generated_text
 
