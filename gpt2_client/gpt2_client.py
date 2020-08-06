@@ -219,15 +219,6 @@ class GPT2Client(object):
             np.random.seed(None)
             tf.set_random_seed(None)
 
-            output = sample_sequence(
-                hparams=hparams,
-                length=length,
-                start_token=enc.encoder['<|endoftext|>'],
-                batch_size=batch_size,
-                temperature=temperature, 
-                top_k=top_k
-            )
-
             saver = tf.train.Saver()
             ckpt = tf.train.latest_checkpoint(os.path.join(self.save_dir, self.model_name))
             saver.restore(sess, ckpt)
@@ -250,7 +241,16 @@ class GPT2Client(object):
         batch_size = 1
         
         for i in batch:
-            print ('Prompt: {}'.format(colored(i, 'green')))
+            #print ('Prompt: {}'.format(colored(i, 'green')))
+            output = sample_sequence(
+                hparams=hparams,
+                length=length,
+                start_token=enc.encoder['<|endoftext|>'],
+                batch_size=batch_size,
+                temperature=temperature, 
+                top_k=top_k
+            )
+
             context_tokens = enc.encode(i)
             text_array = []
             text = ''
