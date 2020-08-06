@@ -219,8 +219,8 @@ class GPT2Client(object):
             hparams.override_from_dict(data)
 
         length = hparams.n_ctx
-        if max_length > 0:
-            length = max_length
+        if max_len > 0:
+            length = max_len
 
         with tf.Session(graph=tf.Graph()) as sess:
             batch_size = 1
