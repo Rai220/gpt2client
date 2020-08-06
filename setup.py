@@ -7,9 +7,9 @@ with open(path.join(this_directory, 'README.md')) as f:
 	long_description = f.read()
 
 setup(
-	name = 'gpt2_client',
+	name = 'gpt2_client', 
 	packages = ['gpt2_client'],
-	version = '2.1.12',
+	version = '2.1.14',
 	license='MIT',
 	description = 'Easy-to-use Wrapper for the GPT-2 117M, 345M, 774M, and 1.5B Transformer Models',
 	long_description = long_description,

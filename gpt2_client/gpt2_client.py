@@ -231,9 +231,9 @@ class GPT2Client(object):
             saver = tf.train.Saver()
             ckpt = tf.train.latest_checkpoint(os.path.join(self.save_dir, self.model_name))
             saver.restore(sess, ckpt)
-            return sess
+            return sess, enc
 
-    def generate_batch_from_prompts(self, sess, batch):
+    def generate_batch_from_prompts(self, sess, enc, batch):
         """ Returns an array of generated text
 
         Parameters
