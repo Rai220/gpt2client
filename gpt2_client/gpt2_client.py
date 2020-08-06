@@ -211,27 +211,27 @@ class GPT2Client(object):
         if max_length > 0:
             length = max_length
 
-        with tf.Session(graph=tf.Graph()) as sess:
-            batch_size = 1
-            top_k = 40
+        sess = tf.Session(graph=tf.Graph())
+        batch_size = 1
+        top_k = 40
 
-            context = tf.placeholder(tf.int32, [batch_size, None])
-            np.random.seed(None)
-            tf.set_random_seed(None)
+        context = tf.placeholder(tf.int32, [batch_size, None])
+        np.random.seed(None)
+        tf.set_random_seed(None)
 
-            output = sample_sequence(
-                hparams=hparams,
-                length=length,
-                start_token=enc.encoder['<|endoftext|>'],
-                batch_size=batch_size,
-                temperature=temperature, 
-                top_k=top_k
-            )
+        output = sample_sequence(
+            hparams=hparams,
+            length=length,
+            start_token=enc.encoder['<|endoftext|>'],
+            batch_size=batch_size,
+            temperature=temperature, 
+            top_k=top_k
+        )
 
-            saver = tf.train.Saver()
-            ckpt = tf.train.latest_checkpoint(os.path.join(self.save_dir, self.model_name))
-            saver.restore(sess, ckpt)
-            return sess, enc, output, context
+        saver = tf.train.Saver()
+        ckpt = tf.train.latest_checkpoint(os.path.join(self.save_dir, self.model_name))
+        saver.restore(sess, ckpt)
+        return sess, enc, output, context
 
     def generate_batch_from_prompts(self, sess, enc, output, context, batch):
         """ Returns an array of generated text
