@@ -85,6 +85,10 @@ class GPT2Client(object):
                     print ('{0:<60}{1:<20}'.format("Loading " + colored(filename, 'cyan', attrs=['bold']), "File already exists"))
                 else:
                     self.download_helper(filename)
+    
+    def generate2(self, interactive=False, n_samples=1, words=None, display=True, return_text=False, max_length=-1):
+        print("this is test")
+
 
     def generate(self, interactive=False, n_samples=1, words=None, display=True, return_text=False, max_length=-1):
         """ Returns generated text sample
