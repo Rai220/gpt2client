@@ -197,32 +197,10 @@ class GPT2Client(object):
                             if return_text:
                                 return text_array
 
-    def generate_batch_from_prompts(self, batch, max_length=-1):
-        """ Returns an array of generated text
-
-        Parameters
-        ----------
-        arg: batch (list)
-            - desc: An array of prompts given to the GPT2Client instance.
-                    The contents of the array are fed to the instance one by one
-
-        Returns:
-            An array of generated text for each prompt given in `batch`
-        """                
-        
-        final_generated_text = []
-        
+    def prepare_sess(self, max_length=-1):
         models_dir = models_dir = os.path.expanduser(os.path.expandvars(self.save_dir))
         enc = get_encoder(self.model_name, self.save_dir)
         hparams = default_hparams()
-
-        with open(os.path.join(self.save_dir, self.model_name, 'hparams.json')) as f:
-            data = json.load(f)
-            hparams.override_from_dict(data)
-
-        length = hparams.n_ctx
-        if max_length > 0:
-            length = max_length
 
         with tf.Session(graph=tf.Graph()) as sess:
             batch_size = 1
@@ -245,23 +223,40 @@ class GPT2Client(object):
             saver = tf.train.Saver()
             ckpt = tf.train.latest_checkpoint(os.path.join(self.save_dir, self.model_name))
             saver.restore(sess, ckpt)
-        
-            for i in batch:
-                print ('Prompt: {}'.format(colored(i, 'green')))
-                context_tokens = enc.encode(i)
-                text_array = []
-                text = ''
-                generated = 0
-                for _ in range(len(batch) // batch_size):
-                    out = sess.run(output, feed_dict={
-                        context: [context_tokens for _ in range(batch_size)]
-                    })[:, len(context_tokens):]
 
-                    for i in range(batch_size):
-                        generated += 1
-                        text += enc.decode(out[i])
-                        
-                        final_generated_text.append(enc.decode(out[i]))
+            return sess
+
+    def generate_batch_from_prompts(self, sess, batch, max_length=-1):
+        """ Returns an array of generated text
+
+        Parameters
+        ----------
+        arg: batch (list)
+            - desc: An array of prompts given to the GPT2Client instance.
+                    The contents of the array are fed to the instance one by one
+
+        Returns:
+            An array of generated text for each prompt given in `batch`
+        """                
+        
+        final_generated_text = []
+        
+        for i in batch:
+            print ('Prompt: {}'.format(colored(i, 'green')))
+            context_tokens = enc.encode(i)
+            text_array = []
+            text = ''
+            generated = 0
+            for _ in range(len(batch) // batch_size):
+                out = sess.run(output, feed_dict={
+                    context: [context_tokens for _ in range(batch_size)]
+                })[:, len(context_tokens):]
+
+                for i in range(batch_size):
+                    generated += 1
+                    text += enc.decode(out[i])
+                    
+                    final_generated_text.append(enc.decode(out[i]))
                 
         return final_generated_text
 
