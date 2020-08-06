@@ -244,7 +244,7 @@ class GPT2Client(object):
             saver.restore(sess, ckpt)
         
             for i in batch:
-                print ('Prompt: {}'.format(colored(i, 'green')))
+                #print ('Prompt: {}'.format(colored(i, 'green')))
                 context_tokens = enc.encode(i)
                 text_array = []
                 text = ''
