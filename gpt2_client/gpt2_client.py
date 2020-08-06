@@ -208,11 +208,9 @@ class GPT2Client(object):
 
         length = hparams.n_ctx
 
-        if max_length > 0:
-            length = max_length
-
         sess = tf.Session(graph=tf.Graph())
         batch_size = 1
+        temperature = 1
         top_k = 40
 
         context = tf.placeholder(tf.int32, [batch_size, None])
@@ -231,6 +229,7 @@ class GPT2Client(object):
         saver = tf.train.Saver()
         ckpt = tf.train.latest_checkpoint(os.path.join(self.save_dir, self.model_name))
         saver.restore(sess, ckpt)
+        
         return sess, enc, output, context
 
     def generate_batch_from_prompts(self, sess, enc, output, context, batch):
