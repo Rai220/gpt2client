@@ -86,7 +86,7 @@ class GPT2Client(object):
                 else:
                     self.download_helper(filename)
 
-    def generate(self, interactive=False, n_samples=1, words=None, display=True, return_text=False):
+    def generate(self, interactive=False, n_samples=1, words=None, display=True, return_text=False, max_length=-1):
         """ Returns generated text sample
         
         Parameters
@@ -124,6 +124,8 @@ class GPT2Client(object):
             hparams.override_from_dict(data)
 
         length = hparams.n_ctx
+        if max_length > 0:
+            length = max_length
 
         with tf.Session(graph=tf.Graph()) as sess:
             batch_size = 1
