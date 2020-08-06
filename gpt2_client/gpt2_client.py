@@ -85,10 +85,6 @@ class GPT2Client(object):
                     print ('{0:<60}{1:<20}'.format("Loading " + colored(filename, 'cyan', attrs=['bold']), "File already exists"))
                 else:
                     self.download_helper(filename)
-    
-    def generate2(self, interactive=False, n_samples=1, words=None, display=True, return_text=False, max_length=-1):
-        print("this is test")
-
 
     def generate(self, interactive=False, n_samples=1, words=None, display=True, return_text=False, max_length=-1):
         """ Returns generated text sample
@@ -201,7 +197,7 @@ class GPT2Client(object):
                             if return_text:
                                 return text_array
 
-    def generate_batch_from_prompts(self, batch):
+    def generate_batch_from_prompts(self, batch, max_length=-1):
         """ Returns an array of generated text
 
         Parameters
@@ -225,6 +221,8 @@ class GPT2Client(object):
             hparams.override_from_dict(data)
 
         length = hparams.n_ctx
+        if max_length > 0:
+            length = max_length
 
         with tf.Session(graph=tf.Graph()) as sess:
             batch_size = 1
