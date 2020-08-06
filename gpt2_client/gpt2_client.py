@@ -213,7 +213,7 @@ class GPT2Client(object):
 
             output = sample_sequence(
                 hparams=hparams,
-                length=length,
+                length=max_length,
                 start_token=enc.encoder['<|endoftext|>'],
                 batch_size=batch_size,
                 temperature=temperature, 
@@ -226,7 +226,7 @@ class GPT2Client(object):
 
             return sess
 
-    def generate_batch_from_prompts(self, sess, batch, max_length=-1):
+    def generate_batch_from_prompts(self, sess, batch):
         """ Returns an array of generated text
 
         Parameters
