@@ -247,6 +247,7 @@ class GPT2Client(object):
         """                
         
         final_generated_text = []
+        batch_size = 1
         
         for i in batch:
             print ('Prompt: {}'.format(colored(i, 'green')))
